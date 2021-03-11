@@ -1,0 +1,8 @@
+This is a python package which aims to implement the HMM glitch detection of Melatos et al. 2020
+in Python. At the moment its main function is to provide a useful way to ingest .par and .tim
+files and return an HMM. This HMM can then be passed to MATLAB for the actual computation.
+
+You can install this package with `pip install .`
+(or `pip install -e .` if you prefer a developmental install).
+
+A working copy of libstempo is required.
