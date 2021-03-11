@@ -1,0 +1,16 @@
+function [F,mu,f0,mu0,L]=iterVM(z)
+mu=0;
+N=2^16;
+f=linspace(1,2,N+1);
+F=1.5;
+clear f0 mu0
+for k=1:100
+	mu0(k)=mu;
+	f0(k)=F;
+	L=sum(cos(2*pi*(z*f-mu))); %VM periodogram
+	[~,k0]=max(L);
+	F=f(k0);
+	y=exp(2*pi*i*z*F);
+	mu=angle(mean(y))/2/pi;
+	f=F+linspace(-1/2^max(k,1/2^k,N);
+end

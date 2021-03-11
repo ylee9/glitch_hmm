@@ -1,0 +1,19 @@
+function [q,mu,V]=fokker_plank(sigma,z,df,dfdot)
+%evaluate discrete distribution over rectangular grid
+M=21;
+mu=[z; 0];
+V=[z^3/3 z^2/2;z^2/2 z]*sigma^2;
+fun = @(x,y)fokker_plank_pdf(x,y,mu,V);
+
+xmin=(-1.5:0.5)*df;
+xmax=(-0.5:1.5)*df;
+ymin=(-0.5:M-1.5)*dfdot;
+ymax=(0.5:M-0.5)*dfdot;
+
+for n=1:3
+	for m=1:M
+		q(m,n) = integral2(fun,xmin(n),xmax(n),ymin(m),ymax(m));
+	end
+end
+q=q/sum(q(:));
+		
