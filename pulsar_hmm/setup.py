@@ -5,5 +5,5 @@ setup(
     version='0.1dev',
     packages=['pulsar_hmm',],
     license='MIT License',
-    long_description=open('README.txt').read(),
+    long_description=open('README.md').read(),
 )
