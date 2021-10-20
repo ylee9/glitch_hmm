@@ -21,20 +21,22 @@ kappa_per_toa = load([working_prefix 'kappas.dat']);
 %sigma = max(1e-21, mean(diff(test_fdots))/mean(test_zs)^0.5)
 %kappa_per_toa = test_kappas;
 
+save([working_prefix 'init.mat']);
+
 [J,BF,E,E0] = seq_glitch_det(zs, freqs', fdots');
 [path,gamma,alpha,beta,evidence,s, residuals] = HMM_Pulse_3dcol(zs, freqs', fdots',[J]);
 
 f = fopen([out_prefix 'res.dat'], 'w');
 fprintf(f, "J: %d\n", J);
-fprintf(f, "BF: %.16f", BF);
+fprintf(f, "BF: %.16f\n", BF);
 fclose(f);
 
 f = fopen([out_prefix 'fdot_path.dat'], 'w');
-fprintf(f,"%d\n", path(:,1));
+fprintf(f,"%d\n", fdots(path(:,1)));
 fclose(f);
 
 f = fopen([out_prefix 'f_path.dat'], 'w');
-fprintf(f,"%d\n", path(:,2));
+fprintf(f,"%d\n", freqs(path(:,2)));
 fclose(f);
 
 f = fopen([out_prefix 'final_evidence.dat'], 'w');
