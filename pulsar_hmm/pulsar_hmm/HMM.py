@@ -36,13 +36,15 @@ class HMM:
     @staticmethod
     def from_tempo2(parfile, timfile, freqs, fdots, noise_cov, glitches, efac=1, equad=0, min_toa_gap=0, mjd_range=None):
         psr = libstempo.tempopulsar(parfile=parfile, timfile=timfile)
-        psr_toas = sorted(psr.toas())
+        psr_toas = psr.toas()
 
         try:
             phase_jumps = psr.flagvals('phaseJ').astype(np.float)
             psr_toas += phase_jumps/86400
         except Exception as e:
             print(e)
+
+        psr_toas = sorted(psr_toas)
 
         psr_toaerrs = [x for _,x in sorted(zip(psr_toas, psr.toaerrs))]
         toas = np.array([psr_toas[0]])
