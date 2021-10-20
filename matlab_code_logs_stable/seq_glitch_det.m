@@ -43,5 +43,3 @@ while true
     end
     save in_progress.mat
 end
-
-	
