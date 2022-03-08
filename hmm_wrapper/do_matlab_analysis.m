@@ -23,12 +23,12 @@ kappa_per_toa = load([working_prefix 'kappas.dat']);
 
 save([working_prefix 'init.mat']);
 
-[J,BF,E,E0] = seq_glitch_det(zs, freqs', fdots');
-[path,gamma,alpha,beta,evidence,s, residuals] = HMM_Pulse_3dcol(zs, freqs', fdots',[J]);
-
+[J,max_BFs,E,E0] = seq_glitch_det(zs, freqs', fdots');
+[path,full_posterior,alpha,beta,evidence,s, residuals] = HMM_Pulse_3dcol(zs, freqs', fdots',[J]);
 f = fopen([out_prefix 'res.dat'], 'w');
-fprintf(f, "J: %d\n", J);
-fprintf(f, "BF: %.16f\n", BF);
+for i = 1:max(size(J))
+    fprintf(f, "%d %.16f\n", J(i), max_BFs(i));
+end
 fclose(f);
 
 f = fopen([out_prefix 'fdot_path.dat'], 'w');
@@ -39,20 +39,17 @@ f = fopen([out_prefix 'f_path.dat'], 'w');
 fprintf(f,"%d\n", freqs(path(:,2)));
 fclose(f);
 
-f = fopen([out_prefix 'final_evidence.dat'], 'w');
-fprintf(f, "%.16f\n", evidence);
-fclose(f);
+for n = 1:size(path,1) freq_posterior(:, n) = logsumexp(full_posterior(:, :, n),1); end;
+writematrix(freq_posterior, [out_prefix 'f_posterior.dat'], 'Delimiter', ' ');
 
-for n = 1:size(path,1) g(:, n) = logsumexp(gamma(:, :, n),1); end;
-f = fopen([out_prefix 'f_posterior.dat'], 'w');
-fprintf(f, "%.16f\n", g);
-fclose(f);
+for n = 1:size(path,1) fdot_posterior(:, n) = logsumexp(full_posterior(:, :, n),2); end;
+writematrix(fdot_posterior, [out_prefix 'fdot_posterior.dat'], 'Delimiter', ' ');
 
+all_BFs = E;
 for i = 1:(numel(J)+1)
-    E(i,:) = E(i,:) - E0(i);
+    all_BFs(i,:) = all_BFs(i,:) - E0(i);
 end
-f = fopen([out_prefix 'bfs.dat'], 'w');
-fprintf(f, "%.16f\n", E);
-fclose(f);
+
+writematrix(all_BFs, [out_prefix 'bfs.dat'], 'Delimiter', ' ');
 
 save([out_prefix 'analysis.mat'])
