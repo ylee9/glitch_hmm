@@ -2,7 +2,8 @@ This is a python package which aims to implement the HMM glitch detection of Mel
 in Python. At the moment its main function is to provide a useful way to ingest .par and .tim
 files and return an HMM. This HMM can then be passed to MATLAB for the actual computation.
 
-You can install this package with `pip install .`
-(or `pip install -e .` if you prefer a developmental install).
+This module also contains the seeds of a python implementation of the MATLAB code in `.../matlab_code_logs_stable`, but this is _not_ functional yet and should not be used.
 
-A working copy of libstempo is required.
+You can install this package with `pip install .`
+
+A working copy of [libstempo](https://github.com/vallis/libstempo) is required.
