@@ -9,6 +9,13 @@ import argparse
 import tempfile
 import subprocess
 import matplotlib.pyplot as plt
+import matplotlib
+plt.rcParams['figure.figsize'] = [12.0, 9.0]
+from matplotlib import rc
+matplotlib.rcParams["text.latex.preamble"] += r'\usepackage[dvips]{graphicx}\usepackage{amsmath}\usepackage{amssymb}'
+rc('text', usetex=True)
+rc('font', size=24.0)
+rc('font',**{'family':'serif'})
 
 def setup_hmm(par, tim, config):
     psr = libstempo.tempopulsar(parfile=par, timfile=tim)
@@ -38,6 +45,7 @@ def setup_hmm(par, tim, config):
     psr_name = None
     red_idx = None
     red_amp = None
+    red_comp = None
     efac = 1
     equad = -100
 
@@ -51,23 +59,29 @@ def setup_hmm(par, tim, config):
                 red_amp = 10**float(split[-1].strip())
             elif split[0].strip() == 'TNRedGam':
                 red_idx = float(split[-1].strip())
+            elif split[0].strip() == 'TNRedC':
+                red_comp = float(split[-1].strip())
             elif split[0].strip().lower() == 'tnglobalef':
                 efac = float(split[-1].strip())
             elif split[0].strip().lower() == 'tnglobaleq':
                 equad = float(split[-1].strip())
+
+    tn_params = {'red_amp': red_amp, 'red_idx': red_idx, 'red_comp': red_comp, 'efac': efac, 'equad': equad}
+
+    hmm = HMM.HMM.from_tempo2(par, tim, freqs, fdots, None, [], min_toa_gap = min_toa_gap, mjd_range=mjd_range)
 
     if 'tn' in config:
         if 'sigma' in config['tn']:
             print('Overriding default value of sigma')
             sigma = float(config['tn']['sigma'])
     else:
-        mean_z = np.mean(np.diff(sorted(psr.toas())))*86400
+        mean_z = np.mean(hmm.zs)
         sigma = max(dfdot/np.sqrt(mean_z), 1e-21)
 
-    hmm = HMM.HMM.from_tempo2(par, tim, freqs, fdots, None, [], min_toa_gap = min_toa_gap, mjd_range=mjd_range)
-    return hmm, sigma
+    return hmm, psr, sigma, tn_params
 
-def do_psr(hmm, sigma, matlab_wrapper, matlab_path, out_prefix, working_prefix):
+def save_hmm_files(hmm, config):
+    working_prefix = config['matlab']['working_prefix'] if 'working_prefix' in config['matlab'] else None
     if not working_prefix:
         tmp_dir = tempfile.TemporaryDirectory()
         working_prefix = tmp_dir.name + "/"
@@ -76,6 +90,16 @@ def do_psr(hmm, sigma, matlab_wrapper, matlab_path, out_prefix, working_prefix):
     np.savetxt(f"{working_prefix}freqs.dat", hmm.freqs)
     np.savetxt(f"{working_prefix}fdots.dat", hmm.fdots)
     np.savetxt(f"{working_prefix}zs.dat", hmm.zs)
+
+    return working_prefix
+
+def do_psr(hmm, sigma, config, extra_matlab_cmd=None):
+    matlab_wrapper = config['matlab']['matlab_wrapper']
+    matlab_path = config['matlab']['matlab_path']
+    out_prefix = config['out']['out_prefix']
+    working_prefix = config['matlab']['working_prefix'] if 'working_prefix' in config['matlab'] else None
+
+
     matlab_cmd = "global f_fiducial fd_fiducial fdd_fiducial sigma kappa_per_toa;"
     matlab_cmd += f"f_fiducial = {hmm.f_fiducial};"
     matlab_cmd += f"fd_fiducial = {-hmm.fd_fiducial};"
@@ -84,8 +108,10 @@ def do_psr(hmm, sigma, matlab_wrapper, matlab_path, out_prefix, working_prefix):
     matlab_cmd += f"out_prefix = '{out_prefix}';"
     matlab_cmd += f"working_prefix = '{working_prefix}';"
     matlab_cmd += f"matlab_path = '{matlab_path}';"
+    if extra_matlab_cmd:
+        matlab_cmd += extra_matlab_cmd
     matlab_cmd += f"run('{matlab_wrapper}');"
-
+    print(matlab_cmd)
     cmd = f"matlab -nosplash -nodesktop -r \"{matlab_cmd} exit\""
     subprocess.run(cmd, shell=True)
     return
@@ -94,53 +120,74 @@ def make_plots(hmm, out_prefix):
     freqs = hmm.freqs
     fdots = hmm.fdots
     zs = hmm.zs
-    f_posterior = np.transpose(np.reshape(np.loadtxt(f"{out_prefix}f_posterior.dat"), (len(zs), len(freqs))))
+    f_posterior = np.loadtxt(f"{out_prefix}f_posterior.dat")
+    freq_ticklabels = ["{:.2E}".format(freqs[int(idx)] if np.abs(freqs[int(idx)]) > 1e-25 else 0) for idx in np.floor(np.linspace(0, len(freqs)-1, 11))]
+    plt.yticks(np.floor(np.linspace(0, len(freqs)-1, 11)), freq_ticklabels)
     plt.imshow(f_posterior, aspect='auto')
-    plt.colorbar()
+    cbar = plt.colorbar()
+    cbar.set_label(r"$\ln[\gamma_f(t_n)]$")
     plt.xlabel('ToA index')
     plt.ylabel('Frequency bin')
     plt.gca().invert_yaxis()
-    plt.savefig(f"{out_prefix}f_posterior.eps")
+    plt.savefig(f"{out_prefix}f_posterior.pdf", bbox_inches='tight')
     plt.clf()
 
-    f_path = freqs[np.loadtxt(f"{out_prefix}f_path.dat", dtype=np.int)-1]
+    fdot_posterior = np.loadtxt(f"{out_prefix}fdot_posterior.dat")
+    plt.imshow(np.exp(fdot_posterior), aspect='auto')
+    cbar = plt.colorbar()
+    cbar.set_label(r"$\gamma_{\dot{f}}(t_n)$")
+    fdot_ticklabels = ["{:.2E}".format(fdots[int(idx)] if np.abs(fdots[int(idx)]) > 1e-25 else 0) for idx in np.floor(np.linspace(0, len(fdots)-1, 5))]
+    plt.yticks(np.floor(np.linspace(0, len(fdots)-1, 5)), fdot_ticklabels)
+    plt.xlabel('ToA index')
+    plt.ylabel('Frequency derivative bin')
+    plt.gca().invert_yaxis()
+    plt.savefig(f"{out_prefix}fdot_posterior.pdf", bbox_inches='tight')
+    plt.clf()
+
+    f_path = np.loadtxt(f"{out_prefix}f_path.dat", dtype=np.float)
     plt.plot(np.cumsum(zs)/86400, f_path)
     plt.ylim(min(freqs), max(freqs))
     plt.xlabel('Days since first ToA')
     plt.ylabel('Frequency (Hz)')
-    plt.savefig(f"{out_prefix}f_path.eps")
+    plt.savefig(f"{out_prefix}f_path.pdf", bbox_inches='tight')
     plt.clf()
 
-    fdot_path = fdots[np.loadtxt(f"{out_prefix}fdot_path.dat", dtype=np.int)-1]
+    fdot_path = np.loadtxt(f"{out_prefix}fdot_path.dat", dtype=np.float)
     print(fdot_path)
     plt.plot(np.cumsum(zs)/86400, fdot_path)
     plt.ylim(min(fdots), max(fdots))
     plt.xlabel('Days since first ToA')
     plt.ylabel('Frequency derivative (Hz/s)')
-    plt.savefig(f"{out_prefix}fdot_path.eps")
+    plt.savefig(f"{out_prefix}fdot_path.pdf", bbox_inches='tight')
     plt.clf()
 
-    bfs = np.loadtxt(f"{out_prefix}bfs.dat")
-    num_models = int(len(bfs)/len(zs))
-    bfs = np.transpose(np.reshape(bfs, (len(zs), num_models)))
-    for i in range(0, num_models):
+    bfs = np.atleast_2d(np.loadtxt(f"{out_prefix}bfs.dat"))
+    #num_models = int(len(bfs)/len(zs))
+    #bfs = np.transpose(np.reshape(bfs, (len(zs), num_models)))
+    print(bfs.shape)
+    for i in range(0, bfs.shape[0]):
         plt.plot(np.cumsum(zs)/86400, bfs[i, :])
         plt.xlabel('Days since first ToA')
         plt.ylabel('ln Bayes factor')
-        plt.savefig(f"{out_prefix}bfs_{i}.eps")
+        plt.tight_layout()
+        plt.savefig(f"{out_prefix}bfs_{i}.pdf", bbox_inches='tight')
         plt.clf()
 
     return
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--par', '-P', type=str, help='The .par file to be used', required=True)
-parser.add_argument('--tim', '-T', type=str, help='The .tim file to be used', required=True)
-parser.add_argument('--ini', '-I', type=str, help='The .ini file containing HMM parameters to be used', required=True)
+if __name__ == '__main__':
 
-args = parser.parse_args()
-config = configparser.ConfigParser()
-config.read(args.ini)
-hmm, sigma = setup_hmm(args.par, args.tim, config)
-do_psr(hmm, sigma, config['matlab']['matlab_wrapper'], config['matlab']['matlab_path'], config['out']['out_prefix'], config['matlab']['working_prefix'] if 'working_prefix' in config['matlab'] else None)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--par', '-P', type=str, help='The .par file to be used', required=True)
+    parser.add_argument('--tim', '-T', type=str, help='The .tim file to be used', required=True)
+    parser.add_argument('--ini', '-I', type=str, help='The .ini file containing HMM parameters to be used', required=True)
 
-make_plots(hmm, config['out']['out_prefix'])
+    args = parser.parse_args()
+    config = configparser.ConfigParser()
+    config.read(args.ini)
+    hmm, psr, sigma, tn_params = setup_hmm(args.par, args.tim, config)
+    working_prefix = save_hmm_files(hmm, config)
+    config['matlab']['working_prefix'] = working_prefix
+    do_psr(hmm, sigma, config)
+
+    make_plots(hmm, config['out']['out_prefix'])
