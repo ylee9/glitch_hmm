@@ -86,19 +86,21 @@ This section provides an overview of the methodology and algorithms used in \gli
 A comprehensive treatment is given by \citet{MelatosDunn2020}.
 
 \subsection{Hidden Markov models in general}
+\label{subsec:hmms_general}
 Hidden Markov models (HMMs) provide a framework for analysing the evolution of a system whose underlying dynamics are \emph{Markovian} (memoryless) and which is observed indirectly (the true state of the system is \emph{hidden}).
 The system is taken to be discrete in time, with snapshots taken at times in the set $\{t_1, t_2, \ldots, t_{N_T}\}$.
-The hidden state of the system is denoted $q(t)$ and can take on $N_Q$ distinct values.
+The hidden state of the system is denoted $q(t_n)$ and can take on $N_Q$ distinct values.
 The evolution of the hidden state of the system is determined by a transition matrix \begin{equation} A_{q_j q_i} = \Pr[q(t_{n+1}) = q_j \mid q(t_n) = q_i]. \end{equation}
-An observation of the system yields a result $o(t)$. 
+An observation of the system yields a result $o(t_n)$. 
 Note that the result of an observation is not necessarily drawn from a discrete set.
 The probability of an observation $o(t_n)$ given that the system is in the state $q(t_n) = q_i$ is referred to as the emission probability, and is given by \begin{equation} L_{o(t_n)q_i} = \Pr[o(t_n) \mid q(t_n) = q_i]. \end{equation}
 
 A realisation of an HMM yields a sequence of hidden states $Q_{1:N_T} = \left\{q(t_1), q(t_2), \ldots, q(t_{N_T})\right\}$ and a sequence of observations $O_{1:N_T} = \left\{o(t_1), o(t_2), \ldots, o(t_{N_T})\right\}$.
 The total probability of a particular $Q_{1:N_T}$ given the observations $O_{1:N_T}$ can be written as \begin{equation} \Pr(Q_{1:N_T} \mid O_{1:N_T}) = \Pi_{q(t_1)}L_{o(t_1)q(t_1)}\prod_{n=2}^{N_T}A_{q(t_n)q(t_{n-1})}L_{o(t_n)q(t_n)}, \end{equation}
-where $\Pi_{q(t_1)}$ probability that the state is initalised in the state $q(t_1)$.
+where $\Pi_{q(t_1)}$ is the probability that the state is initalised in the state $q(t_1)$.
 
 \subsection{Timing pulsars with hidden Markov models}
+\label{subsec:hmms_timing}
 To apply the HMM framework described in the Section \ref{subsec:hmms_general} to pulsar timing, we first identify the set of hidden states $\{q_i\}$ with a discrete grid of $(f, \dot{f})$ pairs which encode the instantaneous spin frequency and its first time derivative.
 The grid is uniformly spaced in both directions, with $\eta_f$ and $\eta_{\dot{f}}$ denoting the space between adjacent grid points in the $f$ and $\dot{f}$ directions respectively.
 
@@ -108,7 +110,7 @@ The minus sign in the second term arises because we use a backwards Taylor expan
 A secular second frequency derivative $\ddot{f}_\text{LS}$ can also be included.
 
 The emission probability $L_{x_n q_i}$ is calculated based on the fact that the number of cycles elapsed during each ToA gap should be an integer.
-This is implemented mathematically using a von Mises distribution, the precise mathematical form is given in equation 3 of \citet{Dunn2021}.
+This is implemented mathematically using a von Mises distribution, the precise mathematical form is given in equation 3 of \citet{DunnMelatos2022}.
 The two main contributions to the variance of $\Phi(t_n; \ldots)$ are the measurement uncertainty on the ToAs, and the phase uncertainty due to the discrete gridding in $f$ and $\dot{f}$.
 
 The evolution of the pulsar's hidden state during the gap between consecutive ToAs in the absence of a glitch is not assumed to be deterministic: we allow for some wandering in $f$ and $\dot{f}$ due to timing noise.
@@ -147,14 +149,16 @@ This section describes some considerations and rules of thumb to help guide the 
 \subsection{Domain of interest}
 \label{subsec:doi}
 The domain of interest (DOI) refers to the set of allowed $f$ and $\dot{f}$ states in the HMM.
-Recall that the hidden states specify deviations away from a secular trend (see Section \ref{subsec:hmm_timing}), so that $f = \dot{f} = 0$ indicates that the pulsar is precisely following the phase evolution specified by $f_\text{LS}$, $\dot{f}_\text{LS}$, and $T_0$.
+Recall that the hidden states specify deviations away from a secular trend (see Section \ref{subsec:hmms_timing}), so that $f = \dot{f} = 0$ indicates that the pulsar is precisely following the phase evolution specified by $f_\text{LS}$, $\dot{f}_\text{LS}$, and $T_0$.
 The DOI is always set up as a uniform grid, and the boundaries and grid spacing are both important parameters.
 
 Both the $f$ and $\dot{f}$ intervals covered by the DOI (denoted $[f_-, f_+]$ and $[\dot{f}_-, \dot{f}_+]$ respectively) must be chosen to accommodate both wandering due to timing noise and any possible glitches.
-Providing a universal prescription for choosing the DOI boundaries is not feasible, but \citet{Dunn2021} found that for a broad range of pulsars a frequency range of $[f_-, f_+] = [-3 \times 10^{-7}\,\mathrm{Hz}, 3 \times 10^{-7}\,\mathrm{Hz}]$ and a frequency derivative range of $[0.1\dot{f}_\text{LS}, -0.1\dot{f}_\text{LS}]$ was appropriate.
+Providing a universal prescription for choosing the DOI boundaries is not feasible, but \citet{DunnMelatos2022} found that for a broad range of pulsars a frequency range of $[f_-, f_+] = [-3 \times 10^{-7}\,\mathrm{Hz}, 3 \times 10^{-7}\,\mathrm{Hz}]$ and a frequency derivative range of $[0.1\dot{f}_\text{LS}, -0.1\dot{f}_\text{LS}]$ was appropriate.
 
 The DOI is discretised with uniform spacing in $f$ and $\dot{f}$, with spacings denoted $\eta_f$ and $\eta_{\dot{f}}$ respectively.
 The choice of $\eta_{\dot{f}}$ is connected to the level of timing noise in the pulsar -- see Section \ref{subsec:tn}.
+At this stage a reliable way of measuring the timing noise and turning this into a value for $\eta_{\dot{f}}$ is not at hand, and a more ad hoc method is unfortunately needed.
+For example, \citet{DunnMelatos2022} chose \begin{equation} \eta_{\dot{f}} = \frac{\dot{f}_+ - \dot{f}_-}{11}, \end{equation} in combination with the prescription for $\dot{f}_{+,-}$ noted in the previous paragraph. Hence the DOI was always discretised into 11 $\dot{f}$ bins, with the bin width increasing as the magnitude of $\dot{f}_\text{LS}$ increased.
 A rule of thumb for choosing $\eta_f$ depends in turn on the value of $\eta_{\dot{f}}$: it is a good idea for $\eta_f$ to be chosen so that the typical change in frequency due to a non-zero $\dot{f}$ is larger than $\eta_f$, i.e. \begin{equation} \eta_f \approx 2\eta_{\dot{f}}\langle x_n \rangle \end{equation} where $\langle x_n \rangle$ is the mean ToA gap in the dataset.
 This assumes that $\eta_{\dot{f}}$ is the smallest possible non-zero value of $\dot{f}$ in the DOI, which will typically be the case.
 \subsection{Timing noise}
@@ -273,6 +277,8 @@ The following is a list of important variables found in that workspace, along wi
 \subsection{Plots}
 In addition to the ASCII and \texttt{.mat} files described in the rest of this section, \glitchhmm{} also generates a number of plots in \texttt{.pdf} format.
 In this subsection we describe those plots and show example plots generated from the PSR J1452$-$6036 analysis in \texttt{hmm\_wrapper/demo/}.
+We emphasise that these plots are generated for convenience, and are not necessarily intended to be publication-quality -- all the data from which they are derived are available in the files described in the rest of this section.
+
 \subsubsection{\texttt{bfs\_i.pdf}}
 These plots show the log Bayes factors generated by successive iterations of the greedy model selection procedure used to detect glitches (see Section \ref{subsec:glitch_det}).
 \texttt{bfs\_0.pdf} shows the first iteration, \texttt{bfs\_1.pdf} the second, and so on.
@@ -293,7 +299,7 @@ The plots generated for the PSR J1452$-$6036 example analysis are shown in Fig. 
     \centering
     \includegraphics[width=0.49\textwidth]{figures/J1452-6036_f_path.pdf}
     \includegraphics[width=0.49\textwidth]{figures/J1452-6036_fdot_path.pdf}
-    \caption{Caption}
+    \caption{Pointwise most likely paths $\hat{f}(t_n)$ \emph{(left)} and $\hat{\dot{f}}(t_n)$ \emph{(right)} from the demo PSR J1452$-$6036 analysis.}
     \label{fig:eg_paths}
 \end{figure}
 
