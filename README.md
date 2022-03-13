@@ -5,4 +5,4 @@ and `.tim` files (`pulsar_hmm` and `hmm_wrapper`).
 
 A working installation of `libstempo` (and `tempo2`) is required to use the latter.
 
-If you use this code, please cite [Melatos et al. 2020](https://ui.adsabs.harvard.edu/abs/2020ApJ...896...78M/abstract).
+If you use this code, please cite [Melatos et al. 2020](https://ui.adsabs.harvard.edu/abs/2020ApJ...896...78M/abstract) and include a link back to this repository.
