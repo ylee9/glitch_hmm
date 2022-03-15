@@ -154,6 +154,7 @@ The DOI is always set up as a uniform grid, and the boundaries and grid spacing 
 
 Both the $f$ and $\dot{f}$ intervals covered by the DOI (denoted $[f_-, f_+]$ and $[\dot{f}_-, \dot{f}_+]$ respectively) must be chosen to accommodate both wandering due to timing noise and any possible glitches.
 Providing a universal prescription for choosing the DOI boundaries is not feasible, but \citet{DunnMelatos2022} found that for a broad range of pulsars a frequency range of $[f_-, f_+] = [-3 \times 10^{-7}\,\mathrm{Hz}, 3 \times 10^{-7}\,\mathrm{Hz}]$ and a frequency derivative range of $[0.1\dot{f}_\text{LS}, -0.1\dot{f}_\text{LS}]$ was appropriate.
+In the case where a glitch is in fact present in the data it may be necessary to increase $f_+$ to accomodate the frequency jump.
 
 The DOI is discretised with uniform spacing in $f$ and $\dot{f}$, with spacings denoted $\eta_f$ and $\eta_{\dot{f}}$ respectively.
 The choice of $\eta_{\dot{f}}$ is connected to the level of timing noise in the pulsar -- see Section \ref{subsec:tn}.
@@ -231,10 +232,10 @@ Then, from the \texttt{hmm\_wrapper/demo/} directory, run the analysis:
 \begin{lstlisting}
 $ python ../run_hmm.py --par J1452-6036.par --tim J1452-6036.tim --ini demo.ini
 \end{lstlisting}
-After a few minutes, several files will appear in the directory specified by \texttt{out\_prefix}.
+When the analysis has finished, several files will appear in the directory specified by \texttt{out\_prefix}.
 The next section discusses these analysis results in detail.
 \section{Output}
-The analysis run by \texttt{run\_hmm.py} (see Section \ref{sec:hmm_wrapper}) produces quite a few output files.
+The analysis run by \texttt{run\_hmm.py} (see Section \ref{sec:hmm_wrapper}) produces quite a few output files, which are described in this section.
 In the following, we will refer to output files by their name \emph{excluding} \texttt{out\_prefix}.
 
 \subsection{\texttt{res.dat}}
