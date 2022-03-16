@@ -1,5 +1,0 @@
-function [L,n]=VMlike(theta,dx)
-p=theta(1);
-dp=theta(2);
-n=-(dp+ 2*p - 2*(dp^2/4 + dp*p + 2*dx*dp + p^2).^(1/2))/(2*dp);
-L=sum(cos(2*pi*(n-mu));
