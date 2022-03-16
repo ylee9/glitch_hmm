@@ -4,6 +4,7 @@ import pulsar_hmm.HMM as HMM
 import libstempo
 import numpy as np
 import configparser
+import shutil
 import sys
 import argparse
 import tempfile
@@ -83,8 +84,8 @@ def setup_hmm(par, tim, config):
 def save_hmm_files(hmm, config):
     working_prefix = config['matlab']['working_prefix'] if 'working_prefix' in config['matlab'] else None
     if not working_prefix:
-        tmp_dir = tempfile.TemporaryDirectory()
-        working_prefix = tmp_dir.name + "/"
+        tmp_dir = tempfile.mkdtemp()
+        working_prefix = tmp_dir + "/"
 
     np.savetxt(f"{working_prefix}kappas.dat", hmm.kappas)
     np.savetxt(f"{working_prefix}freqs.dat", hmm.freqs)
@@ -186,8 +187,15 @@ if __name__ == '__main__':
     config = configparser.ConfigParser()
     config.read(args.ini)
     hmm, psr, sigma, tn_params = setup_hmm(args.par, args.tim, config)
+    if not 'working_prefix' in config['matlab']:
+        delete_working = True
+    else:
+        delete_working = False
     working_prefix = save_hmm_files(hmm, config)
     config['matlab']['working_prefix'] = working_prefix
     do_psr(hmm, sigma, config)
 
     make_plots(hmm, config['out']['out_prefix'])
+
+    if delete_working:
+        shutil.rmtree(config['matlab']['working_prefix'])
