@@ -1,10 +1,7 @@
 Metadata-Version: 2.1
 Name: pulsar-hmm
 Version: 0.1.dev0
-Summary: UNKNOWN
-Home-page: UNKNOWN
 License: MIT License
-Platform: UNKNOWN
 License-File: LICENSE.txt
 
 This is a python package which aims to implement the HMM glitch detection of Melatos et al. 2020
@@ -16,5 +13,3 @@ This module also contains the seeds of a python implementation of the MATLAB cod
 You can install this package with `pip install .`
 
 A working copy of [libstempo](https://github.com/vallis/libstempo) is required.
-
-
