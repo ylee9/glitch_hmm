@@ -40,7 +40,7 @@ class HMM:
 
         try:
             phase_jumps = psr.flagvals('phaseJ').astype(np.float)
-            psr_toas += phase_jumps/86400
+            psr_toas += phase_jumps/psr['F0'].val/86400
         except Exception as e:
             print(e)
 
