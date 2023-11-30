@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 import matplotlib
 plt.rcParams['figure.figsize'] = [12.0, 9.0]
 from matplotlib import rc
-matplotlib.rcParams["text.latex.preamble"] += r'\usepackage[dvips]{graphicx}\usepackage{amsmath}\usepackage{amssymb}'
-rc('text', usetex=True)
+#matplotlib.rcParams["text.latex.preamble"] += r'\usepackage[dvips]{graphicx}\usepackage{amsmath}\usepackage{amssymb}'
+#rc('text', usetex=True)
 rc('font', size=24.0)
 rc('font',**{'family':'serif'})
 
@@ -61,7 +61,7 @@ def setup_hmm(par, tim, config):
             elif split[0].strip() == 'TNRedGam':
                 red_idx = float(split[-1].strip())
             elif split[0].strip() == 'TNRedC':
-                red_comp = float(split[-1].strip())
+                red_comp = int(split[-1].strip())
             elif split[0].strip().lower() == 'tnglobalef':
                 efac = float(split[-1].strip())
             elif split[0].strip().lower() == 'tnglobaleq':
@@ -94,8 +94,8 @@ def save_hmm_files(hmm, config):
 
     return working_prefix
 
-def do_psr(hmm, sigma, config, extra_matlab_cmd=None):
-    matlab_wrapper = config['matlab']['matlab_wrapper']
+def do_psr(hmm, sigma, config, extra_matlab_cmd=None, ul=False):
+    matlab_wrapper = config['matlab']['matlab_wrapper'] if not ul else config['matlab']['matlab_ul_wrapper']
     matlab_path = config['matlab']['matlab_path']
     out_prefix = config['out']['out_prefix']
     working_prefix = config['matlab']['working_prefix'] if 'working_prefix' in config['matlab'] else None
