@@ -32,7 +32,7 @@ alpha0=alpha_m0(:,:,M);
 alpha(:,:,1:M)=alpha_m0(:,:,1:M);
 for n=M:T
 	gi=find(any(n==glitch));
-	[q,r,mu]=fokker_plank_f_freq_noise(sigma,z(n),fran,fdran_ext,df,dfdot,gi);
+	[q,r,mu]=fokker_plank_f_freq_noise(sigma,z(n),median(z), fran,fdran_ext,df,dfdot,gi);
 	[y]=colmaxf2d_r(alpha0,q,mu,r,gi);
 	alpha0=y + s(:,:,n);%bayes rule
 	evidence(n+1)= logsumexp(alpha0(:));

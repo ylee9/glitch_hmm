@@ -1,4 +1,4 @@
-function [q,r,mu]=fokker_plank_f(sigma,z,x,y,df,dfdot,gi)
+function [q,r,mu]=fokker_plank_f(sigma,z,norm_z,x,y,df,dfdot,gi)
 %evaluate discrete forward distribution over rectangular grid
 Kq=length(y);
 N=length(x);
@@ -10,7 +10,7 @@ if (m/2)==round(m/2), m=m-1;end
 xq=x(1:m);
 
 %V=[z^3/3 z^2/2;z^2/2 z]*sigma^2;
-V = [z 0; 0 1]*sigma^2;
+V = [z 0; 0 1/z]*sigma^2;
 s=[xq((m+1)/2) y((Kq+1)/2)];%position in the center
 [xx,yy]=meshgrid(xq,y);
 q=fokker_plank_pdf(xx-s(1),yy-s(2),[0 0],V);%*df*dfdot;

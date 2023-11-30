@@ -48,11 +48,11 @@ t = zeros(T,1);
 for n=1:T
     kappa = kappa_per_toa(n);
     gi=find(any(n==glitch));
-    [q,r,mu]=fokker_plank_f_freq_noise(sigma,z(n),fran,fdran_ext,df,dfdot,gi);
+    [q,r,mu]=fokker_plank_f_freq_noise(sigma,z(n),median(z), fran,fdran_ext,df,dfdot,gi);
     [y]=colmaxf2d_r(alpha0,q,mu,r,gi);
-     fd_fiducial_running = fd_fiducial_running - fdd_fiducial*z(n);
-     f_fiducial_running = f_fiducial_running - fd_fiducial_running*z(n);
-     x_fiducial = 2*pi*(z(n)*f_fiducial_running + 0.5*fd_fiducial_running*z(n)^2 + 1/6*fdd_fiducial*z(n)^3);
+    f_fiducial_running = f_fiducial_running - fd_fiducial_running*z(n) + 0.5*fdd_fiducial*z(n)^2;;
+    fd_fiducial_running = fd_fiducial_running - fdd_fiducial*z(n);
+    x_fiducial = 2*pi*(z(n)*f_fiducial_running + 0.5*fd_fiducial_running*z(n)^2 + 1/6*fdd_fiducial*z(n)^3);
 
      x = 2*pi*(z(n)*fran+1/2*z(n)^2*fdran') + x_fiducial;
     %lik=cos(2*pi*(z(n)*fran+1/2*z(n)^2*fdran'));
@@ -76,7 +76,7 @@ beta(:,:,T+1)=beta0;%T-th beta
 for n=T:-1:2
 	gi=find(any(n==glitch));
 	y=beta0 + s(:,:,n);
-	[q,r,mu]=fokker_plank_b_freq_noise(sigma,z(n),fran,fdran_ext,df,dfdot,gi);
+	[q,r,mu]=fokker_plank_b_freq_noise(sigma,z(n),median(z), fran,fdran_ext,df,dfdot,gi);
 	[beta0]=colmaxf2d_r(y,q,mu,r,gi);
 
 	beta(:,:,n)=beta0;
@@ -92,9 +92,9 @@ for n=1:T
 %   end
     gamma(:,:,n) = gamma(:,:,n) - logsumexp(logsumexp(gamma(:,:,n)));
     [path(n,1),path(n,2)]=find(gamma(:,:,n)==max(max(gamma(:,:,n))),1);
-     fd_fiducial_running = fd_fiducial_running - fdd_fiducial*z(n);
-     f_fiducial_running = f_fiducial_running - fd_fiducial_running*z(n);
-     phase_fiducial = (z(n)*f_fiducial_running + 0.5*fd_fiducial_running*z(n)^2 + 1/6*fdd_fiducial*z(n)^3);
+    f_fiducial_running = f_fiducial_running - fd_fiducial_running*z(n) + 0.5*fdd_fiducial*z(n)^2;
+    fd_fiducial_running = fd_fiducial_running - fdd_fiducial*z(n);
+    phase_fiducial = (z(n)*f_fiducial_running + 0.5*fd_fiducial_running*z(n)^2 + 1/6*fdd_fiducial*z(n)^3);
 
 
     phase = (z(n)*fran(path(n, 2))+1/2*z(n).^2*fdran(path(n, 1))) + phase_fiducial;
