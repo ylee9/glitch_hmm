@@ -199,34 +199,37 @@ fdot_max = 1e-15
 dfdot = 1e-16
 
 # This section contains any parameters related to the inclusion of timing noise in the HMM
-[tn]          
+#[tn]          
 # Override default value of sigma specified in equation 8 (commented out for the purposes of the demo)
 #sigma = 1e-20 
 
 # This section specifies any restrictions on the ToAs to be used
 [toas]
 # ToAs before mjd_min will not be used
-mjd_min = 58514 
+#mjd_min = 58514 
 # ToAs after mjd_max will not be used
-mjd_max = 58700
+#mjd_max = 58700
 # ToAs separated by less than min_toa_gap days will be discarded
-min_toa_gap = 1                                                                        
+#min_toa_gap = 1                                                                        
 
 # This section specifies where to find the relevant MATLAB code. Paths must be absolute.
 [matlab]                                                       
 # The path to the core MATLAB implementation (matlab_code_logs/ in the repository)
 matlab_path = /fred/oz022/ldunn_glitch/glitch_hmm/matlab_code_logs_stable
 # The path to the appropriate MATLAB wrapper script (usually hmm_wrapper/do_matlab_analysis.m)
-matlab_wrapper = /fred/oz022/ldunn_glitch/glitch_hmm/hmm_wrapper/do_matlab_analysis.m 
+matlab_wrapper = /fred/oz022/ldunn_glitch/glitch_hmm/hmm_wrapper/do_matlab_analysis.m
+# Location for storage of temporary working files used by the MATLAB code. If left unset
+# a temporary directory will be created for this purpose
+working_prefix = /fred/oz022/ldunn_glitch/glitch_hmm/hmm_wrapper/demo/work/J1452-6036_
 
 # This section specifies the location of the analysis output. Paths must be absolute.
 [out]
 # All output files will begin with this prefix
-out_prefix = /fred/oz022/ldunn_glitch/glitch_hmm/hmm_wrapper/demo/results/J1452-6036_
+out_prefix = /fred/oz022/ldunn_glitch/glitch_hmm/hmm_wrapper/demo/results/J1452-6036_    
 \end{lstlisting}
 
 There is an example analysis waiting to be run in \texttt{hmm\_wrapper/demo/}. It uses data from {PSR J${1452-6036}$} released by the UTMOST collaboration in their first public data release \citep{LowerBailes2020}, the entirety of which can be found \href{https://github.com/Molonglo/TimingDataRelease1}{here}.
-To run this demo, first edit \texttt{demo.ini} in that directory so that the variables \texttt{matlab\_path}, \texttt{matlab\_wrapper}, \texttt{working\_prefix}, and \texttt{out\_prefix} are appropriately set (noting that all paths must be absolute, not relative).
+To run this demo, first edit \texttt{demo.ini} in that directory so that the variables \texttt{matlab\_path}, \texttt{matlab\_wrapper}, \texttt{working\_prefix}, and \texttt{out\_prefix} are appropriately set (noting that all paths must be absolute, not relative, and that \texttt{working\_prefix} may be left unset, in which case a temporary directory will be created).
 Also, make sure the directories referred to in \texttt{working\_prefix} and \texttt{out\_prefix} exist.
 Then, from the \texttt{hmm\_wrapper/demo/} directory, run the analysis:
 \begin{lstlisting}
