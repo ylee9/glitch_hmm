@@ -40,8 +40,9 @@ def gen_realisation(psr, config, i, glitch_size, tn_params):
     num_preglitch_toas = np.sum([toa < new_psr['GLEP_1'].val for toa in toas])
     toasim.make_ideal(new_psr)
     toasim.add_efac(new_psr)
+    print(tn_params)
     if tn_params['red_amp'] is not None:
-        toasim.add_rednoise(psr, tn_params['red_amp'], tn_params['red_idx'], components=tn_params['red_comp'])
+        toasim.add_rednoise(new_psr, tn_params['red_amp'], tn_params['red_idx'], components=tn_params['red_comp'])
 
     fake_par = f"{config['ul']['working_dir']}/{new_psr.name}.par"
     fake_tim = f"{config['ul']['working_dir']}/{new_psr.name}.tim"
