@@ -145,7 +145,7 @@ def make_plots(hmm, out_prefix):
     plt.savefig(f"{out_prefix}fdot_posterior.pdf", bbox_inches='tight')
     plt.clf()
 
-    f_path = np.loadtxt(f"{out_prefix}f_path.dat", dtype=np.float)
+    f_path = np.loadtxt(f"{out_prefix}f_path.dat", dtype=float)
     plt.plot(np.cumsum(zs)/86400, f_path)
     plt.ylim(min(freqs), max(freqs))
     plt.xlabel('Days since first ToA')
@@ -153,7 +153,7 @@ def make_plots(hmm, out_prefix):
     plt.savefig(f"{out_prefix}f_path.pdf", bbox_inches='tight')
     plt.clf()
 
-    fdot_path = np.loadtxt(f"{out_prefix}fdot_path.dat", dtype=np.float)
+    fdot_path = np.loadtxt(f"{out_prefix}fdot_path.dat", dtype=float)
     print(fdot_path)
     plt.plot(np.cumsum(zs)/86400, fdot_path)
     plt.ylim(min(fdots), max(fdots))
