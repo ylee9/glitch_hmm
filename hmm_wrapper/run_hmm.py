@@ -28,8 +28,8 @@ def setup_hmm(par, tim, config):
     fdot_max = float(config['doi']['fdot_max'])
     dfdot = float(config['doi']['dfdot'])
 
-    freqs = np.arange(freq_min, freq_max, dfreq)
-    fdots = np.arange(fdot_min, fdot_max, dfdot)
+    freqs = np.arange(freq_min, freq_max + dfreq, dfreq)
+    fdots = np.arange(fdot_min, fdot_max + dfdot, dfdot)
     if len(fdots) % 2 == 0:
         fdots = np.linspace(fdot_min, fdot_max, len(fdots)+1)
         dfdot = np.diff(fdots)[0]
